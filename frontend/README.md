@@ -1,6 +1,8 @@
 # Frontend Tech Interview Project
 ![photos](.github/Screenshot.png "screenshot")
 
+## Deployed to: https://interview-nu-lemon.vercel.app/
+
 #### Let's install the project locally
 `npm install`
 
