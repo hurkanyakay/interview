@@ -1,9 +1,5 @@
-# Tech Interview Project
-
-## Steps to get started:
-
-#### Fork the repository and clone it locally
-- https://github.com/Tekmetric/interview.git
+# Frontend Tech Interview Project
+![photos](.github/Screenshot.png "screenshot")
 
 #### Let's install the project locally
 `npm install`
@@ -11,11 +7,17 @@
 #### Let's start the project locally
 `npm start`
 
-### Goals
-1. Fetch Data from the backend Crud API you created or from a public API
-2. Display data from API onto your page (Table, List, etc.)
-3. Apply a styling solution of your choice to make your page look different (CSS, SASS, CSS-in-JS)
-4. Have fun
+### NOTES
+- There was build/start error, fixed with `react-scripts --openssl-legacy-provider start`
+- node version fixed with nvmrc file
+- For api: https://picsum.photos apis are selected
+- tailwind installed and used for styling (why: reduce css files dramatically)
+- for some photos api was failing, status check added
+- lazy loading images for better performance
+- placeholder loading indicator added
+- caching pictures added via service workers
+- starts fetching from page 2, didn't like previous images
+- featured picture slides added
+- different window size support added
+- clicking image opens details, if fails to load HD version, tries to load original picture, if both fails shows error toast
 
-### Submitting your coding exercise
-Once you have finished the coding exercise please create a PR into Tekmetric/interview

@@ -1,27 +1,45 @@
-import React, { Component } from 'react';
-//import logo from './logo.svg';
- 
+import React, { useEffect } from 'react';
+import PhotoGallery from './components/PhotoGallery';
 
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <h2>Welcome to the interview app!</h2>
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
+function App() {
+  useEffect(() => {
+    document.title = 'Best of Unsplash';
+  }, []);
 
-        <or>
-          <li>Fetch Data from a public API <a href="https://github.com/toddmotto/public-apis">Samples</a></li>
-          <li>Display data from API onto your page (Table, List, etc.)</li>
-          <li>Apply a styling solution of your choice to make your page look different (CSS, SASS, CSS-in-JS)</li> 
-        </or>   
-       
-        </header>
+  return (
+    <div className="min-h-screen relative">
+      <div 
+        className="fixed inset-0 z-0"
+        style={{
+          backgroundImage: 'url(https://picsum.photos/id/154/1920/1080)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'blur(4px) brightness(0.6)'
+        }}
+      ></div>
+      <div className="relative z-10">
+      <header className="shadow-sm border-b border-gray-700" style={{ backgroundColor: 'rgba(31, 41, 55, 0.3)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-center items-center py-6">
+            <h1 className="text-xl font-normal text-gray-300" style={{ fontFamily: 'cursive' }}>Best of Unsplash</h1>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <PhotoGallery />
+      </main>
+
+      <footer className="border-t border-gray-700 py-8 mt-12" style={{ backgroundColor: 'rgba(31, 41, 55, 0.3)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center text-gray-400 text-sm">
+            <p>© 2024 Best of Unsplash Gallery.</p>
+          </div>
+        </div>
+      </footer>
       </div>
-    );
-  }
+    </div>
+  );
 }
 
 export default App;
