@@ -1,6 +1,9 @@
 {
   "version": 2,
   "name": "tekmetric-interview",
+  "github": {
+    "enabled": false
+  },
   "builds": [
     {
       "src": "package.json",
