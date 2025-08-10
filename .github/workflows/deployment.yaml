@@ -6,14 +6,9 @@ on:
 
 jobs:
   run-e2es:
-    if: github.event_name == 'repository_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.client_payload.git.sha }}
-
-      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -25,5 +20,3 @@ jobs:
       - name: Run Cypress tests (headless)
         run: npm run test:e2e:headless
         working-directory: frontend
-        env:
-          CYPRESS_baseUrl: ${{ github.event.client_payload.url }}
