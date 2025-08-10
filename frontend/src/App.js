@@ -1,13 +1,53 @@
 import React, { useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from 'react-query';
 import PhotoGallery from './components/PhotoGallery';
+import ErrorBoundary from './components/ErrorBoundary';
+import { usePersistence } from './hooks/usePersistence';
+import { log } from './utils/logger';
 
-function App() {
+// Create a client with optimized defaults
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+// Inner app component to use persistence hooks
+function AppContent() {
+  const { isHydrated } = usePersistence({
+    onCacheLoaded: () => {
+      log('Cache loaded successfully');
+    },
+    onCacheCleared: () => {
+      log('Cache cleared by user');
+    },
+  });
+
   useEffect(() => {
     document.title = 'Best of Unsplash';
   }, []);
 
+  // Show loading state while cache is rehydrating
+  if (!isHydrated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <div className="text-center text-white">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p>Loading gallery...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen relative">
+    <ErrorBoundary fallbackMessage="Something went wrong with the photo gallery. Please refresh to try again.">
+      <div className="min-h-screen relative">
       <div 
         className="fixed inset-0 z-0"
         style={{
@@ -38,7 +78,16 @@ function App() {
         </div>
       </footer>
       </div>
-    </div>
+      </div>
+    </ErrorBoundary>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+    </QueryClientProvider>
   );
 }
 

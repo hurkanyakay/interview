@@ -9,6 +9,12 @@
 #### Let's start the project locally
 `npm start`
 
+## Testing
+`npm test`
+`npm test -- --coverage`
+`npm run test:e2e:headless`
+`npm run test:all`
+
 ### NOTES
 - There was build/start error, fixed with `react-scripts --openssl-legacy-provider start`
 - node version fixed with nvmrc file
@@ -22,4 +28,8 @@
 - featured picture slides added
 - different window size support added
 - clicking image opens details, if fails to load HD version, tries to load original picture, if both fails shows error toast
+- React Query and persistance added for performance
+- Simple error management added for console logs
+- Unit tests are added
+- End-to-end tests implemented with Cypress for complete user flow testing
 

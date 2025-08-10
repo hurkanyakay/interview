@@ -1,51 +1,34 @@
 import React, { useState, useEffect } from 'react';
+import { useSlideshowPhotos } from '../hooks/usePhotos';
 
 const AutoSlideshow = ({ onImageClick }) => {
   // Array of 10 random image IDs
   const slideImageIds = [42, 156, 237, 89, 314, 67, 428, 195, 73, 291];
   
-  const [isReady, setIsReady] = useState(false);
-  const [slideImagesInfo, setSlideImagesInfo] = useState([]);
+  // Use React Query for slideshow data
+  const { data: slideImagesInfo, isLoading, isError } = useSlideshowPhotos(slideImageIds);
+  
   const [loadedImagesCount, setLoadedImagesCount] = useState(0);
   const [hoveredSlide, setHoveredSlide] = useState(null);
   const [failedImages, setFailedImages] = useState(new Set());
+  
+  // Slideshow is ready when data is loaded and not in error state
+  const isReady = !isLoading && !isError && slideImagesInfo && slideImagesInfo.length > 0;
 
+  // Preload images when slideshow data is available
   useEffect(() => {
-    // Fetch info for each slide image
-    const fetchSlideImagesInfo = async () => {
-      const imageInfoPromises = slideImageIds.map(async (id) => {
-        try {
-          const response = await fetch(`https://picsum.photos/id/${id}/info`);
-          if (!response.ok) throw new Error(`Failed to fetch info for image ${id}`);
-          const info = await response.json();
-          return info;
-        } catch (error) {
-          // Return fallback info
-          return {
-            id: id,
-            author: `Photographer ${id}`,
-            width: 3000,
-            height: 2000,
-            url: `https://picsum.photos/id/${id}`,
-            download_url: `https://picsum.photos/id/${id}/3000/2000`
-          };
-        }
-      });
+    if (!slideImagesInfo || slideImagesInfo.length === 0) return;
 
-      const imageInfos = await Promise.all(imageInfoPromises);
-      setSlideImagesInfo(imageInfos);
-      
+    const preloadImages = async () => {
       // Check if images are already cached by service worker
       if ('caches' in window) {
         try {
           const cache = await caches.open('unsplash-images-v1');
-          let cachedCount = 0;
           
-          for (const imageInfo of imageInfos) {
+          for (const imageInfo of slideImagesInfo) {
             const imageUrl = `https://picsum.photos/id/${imageInfo.id}/400/200`;
             const cachedResponse = await cache.match(imageUrl);
             if (cachedResponse) {
-              cachedCount++;
               setLoadedImagesCount(prev => prev + 1);
             } else {
               // Image not cached, preload it
@@ -64,11 +47,9 @@ const AutoSlideshow = ({ onImageClick }) => {
               });
             }
           }
-          
-          setIsReady(true);
         } catch (error) {
           // Fallback to regular preloading if cache check fails
-          const imagePreloadPromises = imageInfos.map((imageInfo) => {
+          const imagePreloadPromises = slideImagesInfo.map((imageInfo) => {
             return new Promise((resolve) => {
               const img = new Image();
               img.onload = () => {
@@ -85,11 +66,10 @@ const AutoSlideshow = ({ onImageClick }) => {
           });
           
           await Promise.all(imagePreloadPromises);
-          setIsReady(true);
         }
       } else {
         // No cache API support, use regular preloading
-        const imagePreloadPromises = imageInfos.map((imageInfo) => {
+        const imagePreloadPromises = slideImagesInfo.map((imageInfo) => {
           return new Promise((resolve) => {
             const img = new Image();
             img.onload = () => {
@@ -106,15 +86,14 @@ const AutoSlideshow = ({ onImageClick }) => {
         });
         
         await Promise.all(imagePreloadPromises);
-        setIsReady(true);
       }
     };
 
-    fetchSlideImagesInfo();
-  }, []);
+    preloadImages();
+  }, [slideImagesInfo]);
 
 
-  if (!isReady || slideImagesInfo.length === 0) {
+  if (!isReady || !slideImagesInfo || slideImagesInfo.length === 0) {
     return (<></>);
   }
 

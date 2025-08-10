@@ -1,74 +1,69 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { fetchPhotos } from '../services/photoService';
+import { useInfinitePhotos, usePhotoMutations } from '../hooks/usePhotos';
 import PhotoModal from './PhotoModal';
 import LoadingSpinner from './LoadingSpinner';
 import AutoSlideshow from './AutoSlideshow';
 
 const PhotoGallery = () => {
-  const [photos, setPhotos] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [page, setPage] = useState(2);
-  const [hasMore, setHasMore] = useState(true);
+  // React Query for data fetching
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    error,
+    refetch
+  } = useInfinitePhotos(20);
+
+  // Photo mutations for cache management
+  const { prefetchNextPage } = usePhotoMutations();
+
+  // Local component state
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [invalidPhotos, setInvalidPhotos] = useState(new Set());
   const [loadedPhotos, setLoadedPhotos] = useState(new Set());
   const [hoveredPhoto, setHoveredPhoto] = useState(null);
 
-  const loadPhotos = useCallback(async (pageNum, isInitial = false) => {
-    if (loading) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const newPhotos = await fetchPhotos(pageNum);
-      
-      if (newPhotos.length === 0) {
-        setHasMore(false);
-      } else {
-        // Filter out duplicate photos by ID
-        const uniqueNewPhotos = newPhotos.filter(newPhoto => 
-          !photos.some(existingPhoto => existingPhoto.id === newPhoto.id)
-        );
-        
-        setPhotos(prev => isInitial ? newPhotos : [...prev, ...uniqueNewPhotos]);
-      }
-    } catch (err) {
-      const errorMessage = err.message.includes('timeout') 
-        ? 'Connection timeout. Please check your internet and try again.'
-        : err.message.includes('Network') 
-        ? 'Network error. Please check your connection and try again.'
-        : `Failed to load photos: ${err.message}`;
-      
-      setError(errorMessage);
-      console.error('Error loading photos:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [loading, photos]);
+  // Flatten all pages of photos
+  const allPhotos = data && data.pages ? data.pages.flat() : [];
 
-  useEffect(() => {
-    loadPhotos(2, true);
-  }, []);
-
+  // Scroll handler for infinite loading
   useEffect(() => {
     const handleScroll = () => {
       if (
         window.innerHeight + document.documentElement.scrollTop >=
         document.documentElement.offsetHeight - 1000 &&
-        hasMore &&
-        !loading
+        hasNextPage &&
+        !isFetchingNextPage
       ) {
-        const nextPage = page + 1;
-        setPage(nextPage);
-        loadPhotos(nextPage);
+        fetchNextPage();
       }
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [hasMore, loading, page, loadPhotos]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Prefetch next page when user is near the end
+  useEffect(() => {
+    if (allPhotos.length > 0 && hasNextPage && !isFetchingNextPage) {
+      const handlePrefetch = () => {
+        if (
+          window.innerHeight + document.documentElement.scrollTop >=
+          document.documentElement.offsetHeight - 2000
+        ) {
+          // Prefetch next page when user is 2000px from bottom
+          const currentPage = data && data.pages ? data.pages.length : 1;
+          prefetchNextPage(currentPage);
+        }
+      };
+
+      window.addEventListener('scroll', handlePrefetch);
+      return () => window.removeEventListener('scroll', handlePrefetch);
+    }
+  }, [allPhotos.length, hasNextPage, isFetchingNextPage, data && data.pages ? data.pages.length : 0, prefetchNextPage]);
 
   const openModal = (photo, cachedUrl = null) => {
     setSelectedPhoto({ ...photo, cachedUrl });
@@ -101,7 +96,7 @@ const PhotoGallery = () => {
 
   // Create ordered masonry columns
   const createOrderedMasonryColumns = () => {
-    const validPhotos = photos.filter(photo => !invalidPhotos.has(photo.id));
+    const validPhotos = allPhotos.filter(photo => !invalidPhotos.has(photo.id));
     const columns = Array.from({ length: columnCount }, () => []);
     
     validPhotos.forEach((photo, index) => {
@@ -140,21 +135,30 @@ const PhotoGallery = () => {
   };
 
 
-  if (error && photos.length === 0) {
+  // Show error state if initial loading failed
+  if (isError && allPhotos.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="text-red-500 text-center">
-          <p className="text-xl mb-4">{error}</p>
+          <p className="text-xl mb-4">
+            {(error && error.message) || 'Failed to load photos. Please try again.'}
+          </p>
           <button
-            onClick={() => {
-              setError(null);
-              loadPhotos(0, true);
-            }}
+            onClick={() => refetch()}
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           >
             Retry
           </button>
         </div>
+      </div>
+    );
+  }
+
+  // Show loading state for initial load
+  if (isLoading && allPhotos.length === 0) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <LoadingSpinner />
       </div>
     );
   }
@@ -220,20 +224,19 @@ const PhotoGallery = () => {
         ))}
         </div>
 
-        {loading && (
+        {isFetchingNextPage && (
           <div className="flex justify-center items-center py-8">
             <LoadingSpinner />
           </div>
         )}
 
-        {error && photos.length > 0 && (
+        {isError && allPhotos.length > 0 && (
           <div className="text-center py-4">
-            <p className="text-red-500 mb-2">{error}</p>
+            <p className="text-red-500 mb-2">
+              {(error && error.message) || 'Failed to load more photos'}
+            </p>
             <button
-              onClick={() => {
-                setError(null);
-                loadPhotos(page);
-              }}
+              onClick={() => fetchNextPage()}
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             >
               Retry
@@ -241,7 +244,7 @@ const PhotoGallery = () => {
           </div>
         )}
 
-        {!hasMore && photos.length > 0 && (
+        {!hasNextPage && allPhotos.length > 0 && (
           <div className="text-center py-8 text-gray-500">
             <p>You've reached the end of the gallery!</p>
           </div>

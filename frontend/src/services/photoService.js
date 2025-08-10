@@ -1,3 +1,5 @@
+import { error as logError, log } from '../utils/logger';
+
 const BASE_URL = 'https://picsum.photos/v2/list';
 const LIMIT = 40;
 const MAX_RETRIES = 3;
@@ -27,11 +29,16 @@ export const fetchPhotos = async (page = 0, retryCount = 0) => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error(`Error fetching photos (attempt ${retryCount + 1}):`, error);
+    logError(`Error fetching photos (attempt ${retryCount + 1}):`, error);
     
-    // Retry logic
+    // Don't retry HTTP errors (4xx, 5xx status codes) - they're not transient
+    if (error.message && error.message.startsWith('HTTP ')) {
+      throw error;
+    }
+    
+    // Retry logic for network errors only
     if (retryCount < MAX_RETRIES) {
-      console.log(`Retrying in ${RETRY_DELAY}ms...`);
+      log(`Retrying in ${RETRY_DELAY}ms...`);
       await delay(RETRY_DELAY * (retryCount + 1)); // Exponential backoff
       return fetchPhotos(page, retryCount + 1);
     }
