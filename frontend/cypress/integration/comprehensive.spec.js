@@ -100,16 +100,11 @@ describe('Photo Gallery - Comprehensive E2E Tests', () => {
   })
 
   it('should display slideshow when ready', () => {
-    // Try to find slideshow, but don't fail if it's not ready yet
-    cy.get('body').then($body => {
-      if ($body.find('.overflow-hidden.mb-8').length > 0) {
-        // If slideshow exists, verify it has images
-        cy.get('.overflow-hidden.mb-8 img').should('have.length.greaterThan', 0)
-      } else {
-        // If slideshow doesn't exist yet, that's also acceptable
-        cy.log('Slideshow not ready yet - this is acceptable')
-      }
-    })
+    // Use custom command with proper timeout
+    cy.waitForSlideshow()
+    
+    // Verify slideshow has images
+    cy.get('.overflow-hidden.mb-8 img').should('have.length.greaterThan', 0)
   })
 
   it('should handle basic error scenarios gracefully', () => {
