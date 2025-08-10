@@ -1,5 +1,5 @@
 # Frontend Tech Interview Project
-![photos](.github/Screenshot.png "screenshot")
+![photos](./Screenshot.png "screenshot")
 
 ## Deployed to: https://interview-nu-lemon.vercel.app/
 
