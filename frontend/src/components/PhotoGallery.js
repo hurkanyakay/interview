@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useInfinitePhotos, usePhotoMutations } from '../hooks/usePhotos';
 import PhotoModal from './PhotoModal';
 import LoadingSpinner from './LoadingSpinner';
@@ -192,7 +192,7 @@ const PhotoGallery = () => {
                 )}
                 <img
                   src={`https://picsum.photos/id/${photo.id}/${calculateImageDimensions(photo).width}/${calculateImageDimensions(photo).height}`}
-                  alt={`Photo by ${photo.author}`}
+                  alt={`By ${photo.author}`}
                   className="w-full h-full object-cover"
                   loading="lazy"
                   onError={() => handleImageError(photo.id)}

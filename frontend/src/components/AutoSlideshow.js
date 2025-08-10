@@ -8,7 +8,7 @@ const AutoSlideshow = ({ onImageClick }) => {
   // Use React Query for slideshow data
   const { data: slideImagesInfo, isLoading, isError } = useSlideshowPhotos(slideImageIds);
   
-  const [loadedImagesCount, setLoadedImagesCount] = useState(0);
+  const [, setLoadedImagesCount] = useState(0);
   const [hoveredSlide, setHoveredSlide] = useState(null);
   const [failedImages, setFailedImages] = useState(new Set());
   
@@ -143,7 +143,7 @@ const AutoSlideshow = ({ onImageClick }) => {
             >
               <img
                 src={`https://picsum.photos/id/${imageInfo.id}/400/200`}
-                alt={`Photo by ${imageInfo.author}`}
+                alt={`By ${imageInfo.author}`}
                 className="w-full h-full object-cover"
                 onError={() => {
                   setFailedImages(prev => new Set([...prev, imageInfo.id]));

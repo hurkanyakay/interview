@@ -73,7 +73,7 @@ const PhotoModal = ({ photo, onClose, cachedImageUrl }) => {
         {/* Show cached image initially, then upgrade to better quality */}
         <img
           src={isHighResLoaded ? currentImageUrl : cachedImageUrl}
-          alt={`Photo by ${photo.author}`}
+          alt={`By ${photo.author}`}
           className="w-full h-full object-contain rounded-lg shadow-2xl"
           style={{ maxHeight: '95vh', maxWidth: '95vw' }}
         />
