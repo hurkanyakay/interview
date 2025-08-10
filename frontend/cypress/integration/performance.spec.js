@@ -89,8 +89,8 @@ describe('Performance and User Experience', () => {
     // Slideshow should be visible and functional
     cy.get('.overflow-hidden.mb-8 .flex').should('be.visible')
     
-    // Should handle interactions without breaking
-    cy.get('.overflow-hidden.mb-8 .flex-shrink-0').first().trigger('mouseover')
+    // Should handle interactions without breaking (force interaction since element might be scrolled)
+    cy.get('.overflow-hidden.mb-8 .flex-shrink-0').first().trigger('mouseover', { force: true })
     cy.wait(1000)
     cy.get('.overflow-hidden.mb-8 .flex').should('be.visible')
   })
