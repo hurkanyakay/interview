@@ -28,7 +28,7 @@ describe('PhotoModal', () => {
   it('renders photo modal with image and info', () => {
     render(<PhotoModal photo={mockPhoto} onClose={mockOnClose} cachedImageUrl="cached-url" />);
     
-    expect(screen.getByAltText('Photo by Test Author')).toBeInTheDocument();
+    expect(screen.getByAltText('By Test Author')).toBeInTheDocument();
     expect(screen.getByText('#123')).toBeInTheDocument();
     expect(screen.getByText('Test Author')).toBeInTheDocument();
     expect(screen.getByText('800 × 600px')).toBeInTheDocument();
@@ -72,7 +72,7 @@ describe('PhotoModal', () => {
   it('does not close modal when clicking on image container', () => {
     render(<PhotoModal photo={mockPhoto} onClose={mockOnClose} cachedImageUrl="cached-url" />);
     
-    const imageContainer = screen.getByAltText('Photo by Test Author').closest('.relative');
+    const imageContainer = screen.getByAltText('By Test Author').closest('.relative');
     fireEvent.click(imageContainer);
     
     expect(mockOnClose).not.toHaveBeenCalled();
